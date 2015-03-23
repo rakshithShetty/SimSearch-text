@@ -1,0 +1,89 @@
+This is the source codebase for the term project in the course T-61.5060 - Algorithmic Methods of Data Mining for Fall 2014.
+The code was developed by Rakshith Shetty (rakshith.shetty@aalto.fi) . You are free to copy or redistribute the code.
+
+
+This implements all the preprocessing, brute force search, optimized exact search and approximate nearest neighbour search on a database of tweets.
+Input is a database file consisting one tweet/sentences in each line  and a query file again containing 1 sentence in each line. 
+
+
+The folder contains 5 c-files each of which will be described in the section below along with example usage.
+
+But first run 'make' command in the source directory in the source directory. More examples of the usage can be found in the shell scripts included in the directory (descriptions below)
+
+=========================================================================================================================================================================================
+Source FILES:
+=========================================================================================================================================================================================
+
+1. createVocab.c	- 	This implements the vocabulary creation using the database tweets. Output is a vocabulary file where 1st line is the size, and rest has a word and its frequency. It takes the following arguments
+
+	a. -read-vocab : The source database file from which to build the vocabulary
+	b. -save-vocab : Output file where to save the vocabulary
+
+	Eg: ./createVocab -read-vocab dbTweets.txt -save-vocab vocabMasterDb.txt
+
+
+2. bruteForceSearch.c	-	This file has two functionalities. First it implements the preprocessing step of converting the words in the database to word indexes while also doing dimensionality reduction simultaneously if specified. Second it also implements the brute force search algorithm to search for nearest neighbours. It has following arguments
+
+	a. -read-vocab : Vocabulary file to be used
+	b. -train-file : database containing tweets in text form
+	c. -saveDb 	   : File where to store the numeric database file
+	c. -dRed       : Dimensionality reduction type to implement 0 -> none, 1 -> Frequent, 2 -> InFrequent, 3 -> Random 
+	d. -ndim       : No of dimensions for dimensionality reduction 
+	e. -binary	   : databse will be stored in binary format if this is 1, otherwise ascii
+	f. -save-vocab : save the reduced vocabulary to this file
+
+	g. -readDb 	   : database file to use for search. If this is provided the program runs in search mode. File should be numeric db in binary format
+	h. -queryfile  : query file for search. Again numeric and binary
+	i. -doOnDisk   : set to 1 to keep the database on disk for memory efficiency. 0 might be broken !!
+
+	
+	Eg building database : ./bruteForceSearch -read-vocab vocabMasterDb.txt -train-file queryTweets.txt -saveDb queryDb_FULL.txt -dRed 0  -binary 1
+	Eg running search: ./bruteForceSearch -readDb DbFull_srt.txt -queryfile queryDbFULL.txt -doOnDisk 1  
+
+
+3. sortDb.c		-	Sorts the numeric database in order of tweet length. Needs to be done before map creation. Has the following arguments
+	 
+	a. -readDb 	   : input numeric database file 
+	b. -saveDb	   : Output sorted database file
+	c. -saveSortkey: File to store the sorted order. Needed to retrieve the original tweet index after the search. In binary format
+
+	Eg : ./sortDb -readDb Db_FULL.txt -saveDb Db_FULL_srt.txt -saveSortKey sortkey_FULL.txt
+
+4. createTweetVocabMap.c	- 	Creates the vocabulary to tweet Map file and Map header file required for fast and approximate search algorithms. It has following algorithms
+	
+	a. -read-vocab : Input Vocabulary file
+	b. -readDb 	   : input numeric database file 
+	c. -save-vocab : File to save the Map header file to
+	d. -save-map   : File to save the Map file to
+	e. -binary 	   : output files are in binary format
+
+
+	Eg :  ./createTweetVocabMap -read-vocab Vocab_FULL.txt -save-vocab VocabMapHeader_FULL.txt -readDb Db_FULL_srt.txt -save-map VocabMap_FULL.bin -binary 1
+
+5. exactSearchOpt	-	Run optimized exact search or Approximate search (Name doesn't tell the whole story ! :-) ). It has the followinf arguments 
+
+	a. -readDb 	   : database file to use for search. 
+	b. -queryfile  : query file for search. Again numeric and binary
+	c. -vocabMapHeader	: Map header file
+	d. -vocabMapDb : Map file
+	e. -sortKey    : sort Key file generated from sortDb application
+	f. -approx	   : Approximation factor ( = (100 + Approximation Error)/100 ). If this is not given or = 1 it runs exact search
+
+	Eg : ./exactSearchOpt -queryfile queryDbFULL.txt -vocabMapHeader VocabMapHeaderFULL.txt -vocabMapDb VocabMapFULL.bin -readDb DbFULL_srt.txt -approx 1.2 -sortKey sortkeyFull.txt
+
+
+=========================================================================================================================================================================================
+Shell Scripts 
+=========================================================================================================================================================================================
+
+
+1. masterScript.sh	- Run the whole thing, from vocabulary creation to collecting all the search results. Need to have query and database input files.
+2. createAlldB.sh 	- Create all the intermediated databases for all dimensionality reduction techniques and dimensions.
+3. runAllNNtest.sh	- Run all the nearest neighbour tests.
+
+
+=========================================================================================================================================================================================
+Matlab scripts
+=========================================================================================================================================================================================
+
+some matlab script to create the plots required by the project. But they are not general enough to warrant usage instructions
